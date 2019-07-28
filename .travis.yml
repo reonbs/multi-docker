@@ -1,0 +1,28 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t reonbs/react-test -f ./client/Dockerfile.dev ./client
+
+scripts:
+  - docker run -e CI=true reonbs/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t reonbs/multi-client ./client
+  - docker build -t reonbs/multi-nginx ./nginx
+  - docker build -t reonbs/multi-server ./server
+  - docker build -t reonbs/multi-worker ./worker
+  #log in to the docker cli
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  #take those images and push them to docker hub
+  - docker push reonbs/multi-client
+  - docker push reonbs/multi-nginx
+  - docker push reonbs/multi-server
+  - docker push reonbs/multi-worker
+
+
+
+
+
+
